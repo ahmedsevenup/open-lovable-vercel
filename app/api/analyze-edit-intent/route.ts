@@ -7,7 +7,9 @@ import { generateObject } from 'ai';
 import { z } from 'zod';
 import type { FileManifest } from '@/types/file-manifest';
 import type { LanguageModel } from 'ai';
+import { sendProgress } from '@/lib/send-progress';
 
+// Initialize all AI clients once at the top of the file
 const groq = createGroq({
   apiKey: process.env.GROQ_API_KEY,
 });
