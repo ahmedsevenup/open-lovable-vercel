@@ -34,6 +34,7 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000)  
+i have adjusted it to work on locahost:2999
 
 ## License
 

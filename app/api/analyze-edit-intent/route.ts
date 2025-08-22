@@ -6,6 +6,7 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { generateObject } from 'ai';
 import { z } from 'zod';
 import type { FileManifest } from '@/types/file-manifest';
+import type { LanguageModel } from 'ai';
 
 const groq = createGroq({
   apiKey: process.env.GROQ_API_KEY,
@@ -19,6 +20,10 @@ const anthropic = createAnthropic({
 const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
   baseURL: process.env.OPENAI_BASE_URL,
+});
+
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_API_KEY,
 });
 
 // Schema for the AI's search plan - not file selection!
@@ -94,7 +99,7 @@ export async function POST(request: NextRequest) {
     console.log('[analyze-edit-intent] File summary preview:', fileSummary.split('\n').slice(0, 5).join('\n'));
     
     // Select the appropriate AI model based on the request
-    let aiModel;
+    let aiModel: LanguageModel;
     if (model.startsWith('anthropic/')) {
       aiModel = anthropic(model.replace('anthropic/', ''));
     } else if (model.startsWith('openai/')) {
@@ -104,7 +109,7 @@ export async function POST(request: NextRequest) {
         aiModel = openai(model.replace('openai/', ''));
       }
     } else if (model.startsWith('google/')) {
-      aiModel = createGoogleGenerativeAI(model.replace('google/', ''));
+      aiModel = google(model.replace('google/', ''));
     } else {
       // Default to groq if model format is unclear
       aiModel = groq(model);
@@ -120,30 +125,30 @@ export async function POST(request: NextRequest) {
         {
           role: 'system',
           content: `You are an expert at planning code searches. Your job is to create a search strategy to find the exact code that needs to be edited.
-
+          
 DO NOT GUESS which files to edit. Instead, provide specific search terms that will locate the code.
 
 SEARCH STRATEGY RULES:
 1. For text changes (e.g., "change 'Start Deploying' to 'Go Now'"):
-   - Search for the EXACT text: "Start Deploying"
-   
+    - Search for the EXACT text: "Start Deploying"
+    
 2. For style changes (e.g., "make header black"):
-   - Search for component names: "Header", "<header"
-   - Search for class names: "header", "navbar"
-   - Search for className attributes containing relevant words
-   
+    - Search for component names: "Header", "<header"
+    - Search for class names: "header", "navbar"
+    - Search for className attributes containing relevant words
+    
 3. For removing elements (e.g., "remove the deploy button"):
-   - Search for the button text or aria-label
-   - Search for relevant IDs or data-testids
-   
+    - Search for the button text or aria-label
+    - Search for relevant IDs or data-testids
+    
 4. For navigation/header issues:
-   - Search for: "navigation", "nav", "Header", "navbar"
-   - Look for Link components or href attributes
-   
+    - Search for: "navigation", "nav", "Header", "navbar"
+    - Look for Link components or href attributes
+    
 5. Be SPECIFIC:
-   - Use exact capitalization for user-visible text
-   - Include multiple search terms for redundancy
-   - Add regex patterns for structural searches
+    - Use exact capitalization for user-visible text
+    - Include multiple search terms for redundancy
+    - Add regex patterns for structural searches
 
 Current project structure for context:
 ${fileSummary}`

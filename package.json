@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev -p 2999 --turbopack",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 2999",
     "lint": "next lint",
     "test:integration": "node tests/e2b-integration.test.js",
     "test:api": "node tests/api-endpoints.test.js",
